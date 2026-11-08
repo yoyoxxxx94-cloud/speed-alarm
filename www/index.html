@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>منبه السرعة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=Cairo:wght@600;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one fixed screen, no scrolling: radar emblem and limit on top, a huge speed number, a keypad of limits, one start/stop button. */
+:root{
+  --ink:#0a0c11; --panel:#12151d; --panel2:#181c27; --line:#272c3b;
+  --gold:#dcb95f; --gold2:#a88a3d; --text:#f4eedd; --muted:#8f93a4;
+  --danger:#e8604e; --ok:#6fcf97;
+  --display:"Reem Kufi","Cairo",system-ui,sans-serif;
+  --ui:"Cairo",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:manipulation;-webkit-user-select:none;user-select:none;background:var(--ink);color:var(--text);font-family:var(--ui);font-size:16px;line-height:1.4}
+body{background:radial-gradient(120% 60% at 50% -10%,#1d1a12 0%,var(--ink) 60%) no-repeat,var(--ink)}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.num{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
+
+.app{height:100%;max-width:520px;margin:0 auto;padding:8px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.brand{flex:none;text-align:center;font-weight:800;font-size:22px;line-height:1.3;color:var(--gold);display:flex;justify-content:center;gap:12px;align-items:center}
+.brand::before,.brand::after{content:"";width:30px;height:1px;background:linear-gradient(90deg,transparent,var(--gold2))}
+.brand::after{transform:scaleX(-1)}
+
+.card{flex:1 1 auto;min-height:0;position:relative;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:12px 14px;overflow:hidden}
+.top{flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.emblem{width:84px;height:84px;flex:none;border-radius:50%;overflow:hidden}
+.emblem svg{width:100%;height:100%;display:block}
+.emblem.talk{box-shadow:0 0 0 4px rgba(220,185,95,.3)}
+#sweep{transform-origin:50px 50px}
+.active #sweep{animation:spin 3s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#blip{opacity:0}
+.over #blip{opacity:1}
+.lim{text-align:center}
+.lim small{color:var(--muted);font-size:13px;display:block}
+.lim b{font-family:var(--display);font-size:42px;line-height:1.1;display:inline-block}
+.lim span{color:var(--muted);font-size:13px}
+.speed{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.speed b{font-family:var(--display);font-size:clamp(84px,30vw,150px);line-height:1;display:block;opacity:.45}
+.active .speed b{opacity:1}
+.speed span{color:var(--muted);font-size:14px}
+.over .speed b{color:var(--danger)}
+.over{border-color:var(--danger);box-shadow:0 0 0 2px var(--danger) inset}
+.status{flex:1;min-width:0;display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted);min-height:18px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--muted);flex:none}
+.dot.live{background:var(--ok)}.dot.bad{background:var(--danger)}
+.foot{flex:none;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:4px}
+.credit{flex:none;direction:ltr;text-align:left}
+.pulse{display:block;width:14px;height:14px;margin:0 0 12px 0;border-radius:50%;background:var(--danger);visibility:hidden;animation:beat 1.4s infinite}
+.active .pulse,.active .sig{visibility:visible}
+.sig{display:block;white-space:nowrap;font-family:"Great Vibes","Brush Script MT",cursive;font-size:9px;line-height:1.3;color:var(--gold);visibility:hidden;clip-path:inset(0 100% 0 0);animation:write 7s ease-in-out infinite}
+@keyframes write{0%{clip-path:inset(0 100% 0 0);opacity:1}60%{clip-path:inset(0 0 0 0);opacity:1}86%{clip-path:inset(0 0 0 0);opacity:1}96%{clip-path:inset(0 0 0 0);opacity:0}100%{clip-path:inset(0 100% 0 0);opacity:0}}
+@keyframes beat{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(232,96,78,.75)}60%{transform:scale(1.12);box-shadow:0 0 0 11px rgba(232,96,78,0)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(232,96,78,0)}}
+
+.keys{flex:0 0 34%;min-height:0;direction:ltr;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:1fr 1fr;gap:8px}
+.key{border-radius:14px;background:var(--panel2);border:1px solid var(--line);font-family:var(--display);font-size:clamp(22px,7vw,32px);min-height:0}
+.key.on{background:linear-gradient(180deg,#e8c96e,#b8953f);color:#1a1405;border-color:var(--gold);font-weight:700}
+.go{flex:none;height:62px;border-radius:16px;background:linear-gradient(180deg,#e8c96e,#b8953f);color:#1a1405;font-weight:800;font-size:20px}
+.go.stop{background:linear-gradient(180deg,#f0806f,#c4402f);color:#fff}
+@media (max-height:700px){
+  .emblem{width:62px;height:62px}
+  .lim b{font-size:34px}
+  .speed b{font-size:clamp(64px,22vw,96px)}
+  .sig{font-size:8px}
+  .keys{flex-basis:30%}
+  .go{height:56px}
+  .app{gap:8px}
+}
+@media (prefers-reduced-motion:reduce){.pulse,.active #sweep,.sig{animation:none}.sig{clip-path:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="brand">منبه السرعة</div>
+
+  <div class="card" id="speedHome">
+    <div class="top">
+      <div class="emblem" id="emblem" role="img" aria-label="رادار وسيارة">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="50" cy="50" r="48" fill="#0e1218" stroke="#a88a3d" stroke-width="2"/>
+          <circle cx="50" cy="50" r="36" fill="none" stroke="#2c3244" stroke-width="1"/>
+          <circle cx="50" cy="50" r="23" fill="none" stroke="#2c3244" stroke-width="1"/>
+          <path d="M50 4V96M4 50H96" stroke="#232838" stroke-width="1"/>
+          <g id="sweep"><path d="M50 50 L50 3 A47 47 0 0 1 83 17 Z" fill="#dcb95f" opacity=".22"/><path d="M50 50 L50 3" stroke="#dcb95f" stroke-width="1.6"/></g>
+          <circle id="blip" cx="74" cy="30" r="4" fill="#e8604e"/>
+          <path d="M20 68 L24 60 Q28 52 38 51 L58 51 Q69 52 74 60 L80 64 Q82 65 82 68 L82 71 L20 71 Z" fill="#f4eedd"/>
+          <path d="M31 60 L36 54 L47 54 L47 60 Z M51 60 L51 54 L60 54 Q66 55 69 60 Z" fill="#0e1218"/>
+          <circle cx="33" cy="72" r="6" fill="#1b1f2b" stroke="#f4eedd" stroke-width="2"/>
+          <circle cx="69" cy="72" r="6" fill="#1b1f2b" stroke="#f4eedd" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="lim"><small>الحد المسموح</small><b id="limTxt" class="num">80</b> <span>كم/س</span></div>
+    </div>
+    <div class="speed"><b id="spVal" class="num">5</b><span>كم/س</span></div>
+    <div class="foot">
+      <div class="status"><i class="dot" id="gpsDot"></i><span id="gpsTxt">المراقبة متوقفة</span></div>
+      <div class="credit"><span class="pulse" aria-hidden="true"></span><div class="sig" dir="ltr">Yahya Matar</div></div>
+    </div>
+  </div>
+
+  <div class="keys" id="keys" role="group" aria-label="السرعة المسموحة"></div>
+  <button class="go" id="spToggle">ابدأ منبه السرعة</button>
+</div>
+
+<script>
+const KEY='azwa-speed-v3';
+const OFFSET=5;                       // car speedometer reads 5 km/h above GPS
+const SPEEDS=[60,70,80,90,100,110,120,130];
+let limit=80;
+try{const v=+JSON.parse(localStorage.getItem(KEY)||'{}').limit;if(SPEEDS.includes(v))limit=v}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({limit}))}catch(e){}}
+const $=s=>document.querySelector(s);
+const D2R=Math.PI/180;
+/* ---------- native (Android app) bridge: GPS + voice keep working with the screen locked ---------- */
+const NATIVE=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+const BG=NATIVE?window.Capacitor.Plugins.BackgroundGeolocation:null;
+const TTS=NATIVE?window.Capacitor.Plugins.TextToSpeech:null;
+let bgId=null;
+
+/* ---------- sounds ---------- */
+let actx=null;
+function audio(){try{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume()}catch(e){}return actx}
+function tone(f,t0,d,v,type){const c=audio();if(!c)return;const o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.value=f;const t=c.currentTime+t0;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v||.25,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(c.destination);o.start(t);o.stop(t+d+.05)}
+function onTone(){[659,880,1175].forEach((f,i)=>tone(f,i*.12,.55,.26))}
+function stopTone(){[988,784,622,466].forEach((f,i)=>tone(f,i*.11,.3,.28,'triangle'))}
+function chirp(v){tone(900,0,.14,v,'square');tone(900,.22,.14,v,'square')}                  // at the limit
+function stall(m,v){for(let i=0;i<6;i++)tone(1000*m,i*.14,.07,v,'square')}                  // 5 over: stall-warning style
+const INTERVAL=[2800,1800,1100];
+
+/* ---------- voice: device Arabic voice says "ساهر" and the limit ---------- */
+// plain words, same default Arabic voice as before; one sukoon on the last letter makes the voice stop on the bare ending (tested wording no. 3)
+const WORDS={30:'ثلاثين',40:'أربعين',50:'خمسين',60:'ستين',70:'سبعين',80:'ثمانين',90:'تسعين',100:'مئة',110:'مئة وعشرة',120:'مئة وعشرين',130:'مئة وثلاثين'};
+const phrase=v=>'ساهر '+(WORDS[v]||v)+'\u0652';
+function say(text){
+  if(TTS){
+    const em=$('#emblem');em.classList.add('talk');
+    TTS.speak({text,lang:'ar-SA',rate:1,pitch:1,volume:1,category:'playback'}).catch(()=>{}).finally(()=>em.classList.remove('talk'));
+    return;
+  }
+  try{
+    const ss=window.speechSynthesis;if(!ss)return;
+    ss.cancel();
+    const u=new SpeechSynthesisUtterance(text),em=$('#emblem');
+    u.lang='ar-SA';
+    u.onstart=()=>em.classList.add('talk');
+    u.onend=u.onerror=()=>em.classList.remove('talk');
+    ss.speak(u);
+    setTimeout(()=>em.classList.remove('talk'),4000);
+  }catch(e){}
+}
+
+/* ---------- limit keypad ---------- */
+function renderKeys(){$('#keys').innerHTML=SPEEDS.map(v=>`<button class="key ${v===limit?'on':''}" data-v="${v}" aria-pressed="${v===limit}">${v}</button>`).join('');$('#limTxt').textContent=limit}
+$('#keys').addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(!b)return;audio();limit=+b.dataset.v;save();renderKeys();say(phrase(limit))});
+
+/* ---------- GPS ---------- */
+let watchId=null,monitoring=false,lastLvl=-1,rawS=0,lastPos=null,overFlag=false,lastVoice=0,lastTone=0,retryT=null,wl=null;
+function setStatus(txt,cls){$('#gpsTxt').textContent=txt;$('#gpsDot').className='dot '+(cls||'')}
+function onPos(p){
+  let s=p.coords.speed;
+  if((s==null||isNaN(s))&&lastPos){const dt=(p.timestamp-lastPos.t)/1000;if(dt>0){s=Math.hypot((p.coords.latitude-lastPos.la)*111320,(p.coords.longitude-lastPos.lo)*111320*Math.cos(p.coords.latitude*D2R))/dt}}
+  lastPos={la:p.coords.latitude,lo:p.coords.longitude,t:p.timestamp};
+  const raw=Math.max(0,(s||0)*3.6);
+  rawS=raw<3?0:rawS*.35+raw*.65;        // noise below 3 km/h counts as standing still; light smoothing otherwise
+  setStatus('GPS متصل · الدقة '+Math.round(p.coords.accuracy)+' م','live');
+}
+function onGpsErr(e){
+  if(!monitoring)return;
+  if(e.code===1){setStatus('الموقع غير مسموح. اسمح به من إعدادات المتصفح أو الجوال','bad');return}
+  setStatus('شغّل الموقع (GPS) من إعدادات جوالك','bad');
+  clearTimeout(retryT);retryT=setTimeout(()=>{if(monitoring)startWatch()},4000);
+}
+function startWatch(){
+  if(BG){
+    setStatus('جارٍ طلب الموقع...');
+    if(bgId!=null){BG.removeWatcher({id:bgId}).catch(()=>{});bgId=null}
+    BG.addWatcher({backgroundTitle:'منبه السرعة يعمل',backgroundMessage:'يراقب سرعتك في الخلفية',requestPermissions:true,stale:false,distanceFilter:0},(l,err)=>{
+      if(err){
+        if(err.code==='NOT_AUTHORIZED'){setStatus('اسمح بالموقع «طوال الوقت» من إعدادات التطبيق','bad');try{BG.openSettings()}catch(e){}}
+        else setStatus('شغّل الموقع (GPS) من إعدادات جوالك','bad');
+        return;
+      }
+      if(!l||!monitoring)return;
+      onPos({coords:{speed:l.speed,latitude:l.latitude,longitude:l.longitude,accuracy:l.accuracy||0},timestamp:l.time||Date.now()});
+    }).then(id=>{bgId=id;if(!monitoring){BG.removeWatcher({id}).catch(()=>{});bgId=null}}).catch(()=>setStatus('تعذّر تشغيل الموقع','bad'));
+    return;
+  }
+  if(!navigator.geolocation){setStatus('هذا المتصفح لا يدعم GPS','bad');return}
+  if(watchId!=null)navigator.geolocation.clearWatch(watchId);
+  setStatus('جارٍ طلب الموقع...');
+  watchId=navigator.geolocation.watchPosition(onPos,onGpsErr,{enableHighAccuracy:true,maximumAge:0,timeout:20000});
+}
+function keepAwake(){try{if(navigator.wakeLock&&monitoring)navigator.wakeLock.request('screen').then(l=>wl=l).catch(()=>{})}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')keepAwake()});
+function setBtn(){const b=$('#spToggle');b.textContent=monitoring?'أوقف منبه السرعة':'ابدأ منبه السرعة';b.classList.toggle('stop',monitoring)}
+function replaySig(){const g=$('.sig');g.style.animation='none';void g.offsetWidth;g.style.animation=''}
+function startMon(){monitoring=true;audio();onTone();replaySig();setBtn();keepAwake();startWatch()}
+function stopMon(){                      // stops the GPS request completely
+  monitoring=false;overFlag=false;clearTimeout(retryT);
+  if(watchId!=null&&navigator.geolocation)navigator.geolocation.clearWatch(watchId);
+  if(BG&&bgId!=null){BG.removeWatcher({id:bgId}).catch(()=>{});bgId=null}
+  try{TTS&&TTS.stop()}catch(e){}
+  watchId=null;lastPos=null;rawS=0;
+  try{wl&&wl.release();wl=null}catch(e){}
+  try{speechSynthesis.cancel()}catch(e){}
+  setBtn();setStatus('المراقبة متوقفة');draw();stopTone();
+}
+$('#spToggle').onclick=()=>monitoring?stopMon():startMon();
+
+/* ---------- display and alert ---------- */
+// shown speed = GPS + 5: 5 while standing, 6 as soon as the car moves
+function draw(){
+  const shown=Math.round(rawS)+OFFSET,over=monitoring&&shown>=limit;
+  $('#spVal').textContent=shown;
+  const c=$('#speedHome');c.classList.toggle('over',over);c.classList.toggle('active',monitoring);
+  return over?(shown>=limit+10?2:shown>=limit+5?1:0):-1;
+}
+function speedAlert(level){
+  const n=Date.now(),m=1+.18*(level>1?1:0),v=Math.min(.55,.26+.08*level);
+  const play=()=>level===0?chirp(v):stall(m,v);
+  if(!overFlag){overFlag=true;lastLvl=level;lastVoice=n;lastTone=n;play();try{navigator.vibrate&&navigator.vibrate(300)}catch(e){}setTimeout(()=>say(phrase(limit)),700);return}
+  if(level>lastLvl||n-lastTone>=INTERVAL[level]){lastLvl=level;lastTone=n;play();try{level>0&&navigator.vibrate&&navigator.vibrate(200)}catch(e){}}
+  if(n-lastVoice>10000){lastVoice=n;say(phrase(limit))}
+}
+function tick(){const l=draw();if(monitoring&&l>=0)speedAlert(l);else{overFlag=false;lastLvl=-1}}
+renderKeys();tick();setInterval(tick,250);
+</script>
+</body>
+</html>

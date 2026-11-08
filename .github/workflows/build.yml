@@ -30,7 +30,7 @@ jobs:
           sed -i "s|GITHUB_USER|${OWNER}|; s|REPO_NAME|${REPO}|" capacitor.config.json
           cat capacitor.config.json
 
-      - run: npm install
+      - run: npm install --legacy-peer-deps --legacy-peer-deps
       - run: npx cap add android
 
       - name: Icons

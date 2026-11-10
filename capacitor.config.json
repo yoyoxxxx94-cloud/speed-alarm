@@ -2,10 +2,6 @@
   "appId": "com.yahya.sahar",
   "appName": "منبه السرعة",
   "webDir": "www",
-  "server": {
-    "url": "https://GITHUB_USER.github.io/REPO_NAME/",
-    "androidScheme": "https",
-    "cleartext": false
-  },
+  "server": { "androidScheme": "https" },
   "android": { "backgroundColor": "#0b0f1a" }
 }

@@ -30,16 +30,18 @@ jobs:
           sed -i "s|GITHUB_USER|${OWNER}|; s|REPO_NAME|${REPO}|" capacitor.config.json
           cat capacitor.config.json
 
-      - run: npm install --legacy-peer-deps --legacy-peer-deps
+      - run: npm install --legacy-peer-deps
       - run: npx cap add android
 
       - name: Icons
-        run: npx @capacitor/assets generate --android --iconBackgroundColor '#0b0f1a' --iconBackgroundColorDark '#0b0f1a' || true
+        run: |
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
+          cp -r icons-res/* android/app/src/main/res/
 
       - name: Permissions
         run: |
           M=android/app/src/main/AndroidManifest.xml
-          for P in ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION ACCESS_BACKGROUND_LOCATION FOREGROUND_SERVICE FOREGROUND_SERVICE_LOCATION POST_NOTIFICATIONS WAKE_LOCK; do
+          for P in ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION ACCESS_BACKGROUND_LOCATION REQUEST_IGNORE_BATTERY_OPTIMIZATIONS FOREGROUND_SERVICE FOREGROUND_SERVICE_LOCATION POST_NOTIFICATIONS WAKE_LOCK; do
             sed -i "s|</manifest>|    <uses-permission android:name=\"android.permission.$P\" />\n</manifest>|" $M
           done
 

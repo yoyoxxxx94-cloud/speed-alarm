@@ -33,6 +33,9 @@ jobs:
       - run: npm install --legacy-peer-deps
       - run: npx cap add android
 
+      - name: Newer Gradle (needed by the background plugin)
+        run: sed -i 's|distributions/gradle-[0-9.]*-\(all\|bin\).zip|distributions/gradle-8.11.1-all.zip|' android/gradle/wrapper/gradle-wrapper.properties && cat android/gradle/wrapper/gradle-wrapper.properties
+
       - name: Icons
         run: |
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
